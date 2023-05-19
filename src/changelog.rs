@@ -72,8 +72,8 @@ pub mod r0_7_1 {}
 ///
 /// The `std::vector` type, much like in Rust's `Vec`, stores its contents in a buffer allocated on
 /// the heap. In this example the vector object itself is stored and initialized as a static
-/// variable – a compile time construct. The heap, on the other hand, is a runtime construct. And
-/// yet the code works exactly as you'd expect – the vector contains numbers 1, 2 and 3 stored in
+/// variable -- a compile time construct. The heap, on the other hand, is a runtime construct. And
+/// yet the code works exactly as you'd expect -- the vector contains numbers 1, 2 and 3 stored in
 /// a buffer on heap. So, _what_ makes it work out, exactly?
 ///
 /// Various executable and shared library formats define conventions and machinery to execute
@@ -87,7 +87,7 @@ pub mod r0_7_1 {}
 /// by code run as part of such an initializer routine. This initializer is run before the entry
 /// point (the `main` function) is executed, allowing for this magical behaviour to be possible.
 /// Were the C++ code built as a shared library instead, the initialization routines would run as
-/// the resulting shared library is loaded. In case of `libloading` – during the call to
+/// the resulting shared library is loaded. In case of `libloading` -- during the call to
 /// `Library::new` and other methods affected by this change.
 ///
 /// These initialization (and very closely related termination) routines can be utilized outside of
@@ -278,7 +278,7 @@ pub mod r0_4_1 {}
 /// * Remove build-time dependency on target_build_utils (and by extension serde/phf);
 /// * Require at least version 1.14.0 of rustc to build;
 ///   * Actually, it is cargo which has to be more recent here. The one shipped with rustc 1.14.0
-///     is what’s being required from now on.
+///     is what's being required from now on.
 pub mod r0_4_0 {}
 
 /// Release 0.3.4 (2017-03-25)
@@ -322,7 +322,7 @@ pub mod r0_3_1 {}
 ///
 /// `Library::new` defaults to `RTLD_NOW` instead of `RTLD_LAZY` on UNIX for more consistent
 /// cross-platform behaviour. If a library loaded with `Library::new` had any linking errors, but
-/// unresolved references weren’t forced to be resolved, the library would’ve “just worked”,
+/// unresolved references weren't forced to be resolved, the library would've "just worked",
 /// whereas now the call to `Library::new` will return an error signifying presence of such error.
 ///
 /// ## os::platform

@@ -55,12 +55,17 @@ use util::{ensure_compatible_types, cstr_cow_from_bytes};
 use std::ffi::{OsStr, OsString};
 use std::{fmt, io, marker, mem, ptr};
 
+/// A raw handle to a loaded library.
+pub type RawLibrary = HMODULE;
+/// A raw handle to a loaded symbol.
+pub type RawSymbol = FARPROC;
+
 /// The platform-specific counterpart of the cross-platform [`Library`](crate::Library).
 pub struct Library(HMODULE);
 
 unsafe impl Send for Library {}
 // Now, this is sort-of-tricky. MSDN documentation does not really make any claims as to safety of
-// the Win32 APIs. Sadly, whomever I asked, even current and former Microsoft employees, couldn’t
+// the Win32 APIs. Sadly, whomever I asked, even current and former Microsoft employees, couldn't
 // say for sure whether the Win32 APIs used to implement `Library` are thread-safe or not.
 //
 // My investigation ended up with a question about thread-safety properties of the API involved
@@ -162,7 +167,7 @@ impl Library {
             }).map_err(|e| e.unwrap_or(crate::Error::GetModuleHandleExWUnknown))
         };
 
-        drop(wide_filename); // Drop wide_filename here to ensure it doesn’t get moved and dropped
+        drop(wide_filename); // Drop wide_filename here to ensure it doesn't get moved and dropped
                              // inside the closure by mistake. See comment inside the closure.
         ret
     }
@@ -201,7 +206,7 @@ impl Library {
                 Some(Library(handle))
             }
         }).map_err(|e| e.unwrap_or(crate::Error::LoadLibraryExWUnknown));
-        drop(wide_filename); // Drop wide_filename here to ensure it doesn’t get moved and dropped
+        drop(wide_filename); // Drop wide_filename here to ensure it doesn't get moved and dropped
                              // inside the closure by mistake. See comment inside the closure.
         ret
     }
@@ -427,7 +432,7 @@ where F: FnOnce() -> Option<T> {
 /// See [flag documentation on MSDN](https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibraryexw#parameters).
 pub const LOAD_IGNORE_CODE_AUTHZ_LEVEL: DWORD = consts::LOAD_IGNORE_CODE_AUTHZ_LEVEL;
 
-/// Map the file into the calling process’ virtual address space as if it were a data file.
+/// Map the file into the calling process' virtual address space as if it were a data file.
 ///
 /// Nothing is done to execute or prepare to execute the mapped file. Therefore, you cannot call
 /// functions like [`Library::get`] with this DLL. Using this value causes writes to read-only
@@ -437,7 +442,7 @@ pub const LOAD_IGNORE_CODE_AUTHZ_LEVEL: DWORD = consts::LOAD_IGNORE_CODE_AUTHZ_L
 /// See [flag documentation on MSDN](https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibraryexw#parameters).
 pub const LOAD_LIBRARY_AS_DATAFILE: DWORD = consts::LOAD_LIBRARY_AS_DATAFILE;
 
-/// Map the file into the calling process’ virtual address space as if it were a data file.
+/// Map the file into the calling process' virtual address space as if it were a data file.
 ///
 /// Similar to [`LOAD_LIBRARY_AS_DATAFILE`], except that the DLL file is opened with exclusive
 /// write access for the calling process. Other processes cannot open the DLL file for write access
@@ -446,7 +451,7 @@ pub const LOAD_LIBRARY_AS_DATAFILE: DWORD = consts::LOAD_LIBRARY_AS_DATAFILE;
 /// See [flag documentation on MSDN](https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibraryexw#parameters).
 pub const LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE: DWORD = consts::LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE;
 
-/// Map the file into the process’ virtual address space as an image file.
+/// Map the file into the process' virtual address space as an image file.
 ///
 /// The loader does not load the static imports or perform the other usual initialisation steps.
 /// Use this flag when you want to load a DLL only to extract messages or resources from it.
@@ -477,7 +482,7 @@ pub const LOAD_LIBRARY_SEARCH_APPLICATION_DIR: DWORD = consts::LOAD_LIBRARY_SEAR
 pub const LOAD_LIBRARY_SEARCH_DEFAULT_DIRS: DWORD = consts::LOAD_LIBRARY_SEARCH_DEFAULT_DIRS;
 
 /// Directory that contains the DLL is temporarily added to the beginning of the list of
-/// directories that are searched for the DLL’s dependencies.
+/// directories that are searched for the DLL's dependencies.
 ///
 /// Directories in the standard search path are not searched.
 ///

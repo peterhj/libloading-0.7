@@ -12,9 +12,14 @@ use self::unix_imports::*;
 use std::ffi::{CStr, OsStr};
 use std::os::raw;
 use std::{fmt, marker, mem, ptr};
-use util::{cstr_cow_from_bytes, ensure_compatible_types};
+use crate::util::{cstr_cow_from_bytes, ensure_compatible_types};
 
 mod consts;
+
+/// A raw handle to a loaded library.
+pub type RawLibrary = *mut raw::c_void;
+/// A raw handle to a loaded symbol.
+pub type RawSymbol = *mut raw::c_void;
 
 // dl* family of functions did not have enough thought put into it.
 //
@@ -55,15 +60,15 @@ where F: FnOnce() -> Option<T> {
         // This code will only get executed if the `closure` returns `None`.
         let error = dlerror();
         if error.is_null() {
-            // In non-dlsym case this may happen when there’re bugs in our bindings or there’s
+            // In non-dlsym case this may happen when there're bugs in our bindings or there's
             // non-libloading user of libdl; possibly in another thread.
             None
         } else {
-            // You can’t even rely on error string being static here; call to subsequent dlerror
-            // may invalidate or overwrite the error message. Why couldn’t they simply give up the
+            // You can't even rely on error string being static here; call to subsequent dlerror
+            // may invalidate or overwrite the error message. Why couldn't they simply give up the
             // ownership over the message?
-            // TODO: should do locale-aware conversion here. OTOH Rust doesn’t seem to work well in
-            // any system that uses non-utf8 locale, so I doubt there’s a problem here.
+            // TODO: should do locale-aware conversion here. OTOH Rust doesn't seem to work well in
+            // any system that uses non-utf8 locale, so I doubt there's a problem here.
             let message = CStr::from_ptr(error).into();
             Some(wrap(crate::error::DlDescription(message)))
             // Since we do a copy of the error string above, maybe we should call dlerror again to
@@ -84,8 +89,8 @@ unsafe impl Send for Library {}
 // > All functions defined by this volume of POSIX.1-2008 shall be thread-safe, except that the
 // > following functions need not be thread-safe.
 //
-// With notable absence of any dl* function other than dlerror in the list. By “this volume”
-// I suppose they refer precisely to the “volume 2”. dl* family of functions are specified
+// With notable absence of any dl* function other than dlerror in the list. By "this volume"
+// I suppose they refer precisely to the "volume 2". dl* family of functions are specified
 // by this same volume, so the conclusion is indeed that dl* functions are required by POSIX
 // to be thread-safe. Great!
 //
@@ -195,7 +200,7 @@ impl Library {
         // pointer or the symbol cannot be found. In order to detect this case a double dlerror
         // pattern must be used, which is, sadly, a little bit racy.
         //
-        // We try to leave as little space as possible for this to occur, but we can’t exactly
+        // We try to leave as little space as possible for this to occur, but we can't exactly
         // fully prevent it.
         match with_dlerror(|desc| crate::Error::DlSym { desc }, || {
             dlerror();
@@ -241,7 +246,6 @@ impl Library {
     /// consider using the [`Library::get_singlethreaded`] call.
     #[inline(always)]
     pub unsafe fn get<T>(&self, symbol: &[u8]) -> Result<Symbol<T>, crate::Error> {
-        extern crate cfg_if;
         cfg_if::cfg_if! {
             // These targets are known to have MT-safe `dlerror`.
             if #[cfg(any(
@@ -333,7 +337,7 @@ impl Library {
         }).map_err(|e| e.unwrap_or(crate::Error::DlCloseUnknown));
         // While the library is not free'd yet in case of an error, there is no reason to try
         // dropping it again, because all that will do is try calling `dlclose` again. only
-        // this time it would ignore the return result, which we already seen failing…
+        // this time it would ignore the return result, which we already seen failing...
         std::mem::forget(self);
         result
     }
@@ -365,6 +369,11 @@ pub struct Symbol<T> {
 impl<T> Symbol<T> {
     /// Convert the loaded `Symbol` into a raw pointer.
     pub fn into_raw(self) -> *mut raw::c_void {
+        self.pointer
+    }
+
+    /// Get an unsafe copy of the raw pointer for the loaded `Symbol`.
+    pub unsafe fn as_ptr(&self) -> *mut raw::c_void {
         self.pointer
     }
 }

@@ -61,7 +61,7 @@ impl Library {
     /// # Tips
     ///
     /// Distributing your dynamic libraries under a filename common to all platforms (e.g.
-    /// `awesome.module`) allows you to avoid code which has to account for platform’s conventional
+    /// `awesome.module`) allows you to avoid code which has to account for platform's conventional
     /// library filenames.
     ///
     /// Strive to specify an absolute or at least a relative path to your library, unless
@@ -190,7 +190,7 @@ unsafe impl Sync for Library {}
 /// unloaded. The primary method to create an instance of a `Symbol` is via [`Library::get`].
 ///
 /// The `Deref` trait implementation allows the use of `Symbol` as if it was a function or variable
-/// itself, without taking care to “extract” the function or variable manually most of the time.
+/// itself, without taking care to "extract" the function or variable manually most of the time.
 ///
 /// [`Library::get`]: Library::get
 #[cfg_attr(libloading_docs, doc(cfg(any(unix, windows))))]

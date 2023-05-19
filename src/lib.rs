@@ -45,10 +45,13 @@ mod util;
 mod error;
 pub use self::error::Error;
 
+/// An OS-specific, not necessarily safely loaded dynamic library.
+#[cfg(any(unix, windows))]
+pub mod nonsafe;
+
+/// A safely loaded dynamic library.
 #[cfg(any(unix, windows, libloading_docs))]
-mod safe;
-#[cfg(any(unix, windows, libloading_docs))]
-pub use self::safe::{Library, Symbol};
+pub mod safe;
 
 use std::env::consts::{DLL_PREFIX, DLL_SUFFIX};
 use std::ffi::{OsStr, OsString};
