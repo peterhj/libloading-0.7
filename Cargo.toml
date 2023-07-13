@@ -1,7 +1,7 @@
 [package]
 name = "libloading"
 # When bumping
-# * Don’t forget to add an entry to `src/changelog.rs`
+# * Don't forget to add an entry to `src/changelog.rs`
 # * If bumping to an incompatible version, adjust the documentation in `src/lib.rs`
 version = "0.7.4"
 authors = ["Simonas Kazlauskas <libloading@kazlauskas.me>"]
@@ -13,6 +13,7 @@ description = "Bindings around the platform's dynamic library loading primitives
 keywords = ["dlopen", "load", "shared", "dylib"]
 categories = ["api-bindings"]
 rust-version = "1.40.0"
+edition = "2018"
 
 [target.'cfg(windows)'.dependencies.winapi]
 version = "0.3"
@@ -20,9 +21,11 @@ features = [
     "errhandlingapi",
     "libloaderapi",
 ]
+optional = true
 
-[target.'cfg(unix)'.dependencies.cfg-if]
-version = "1"
+[target.'cfg(unix)'.dependencies.cfg_if]
+#version = "1"
+path = "../cfg_if"
 
 [dev-dependencies]
 libc = "0.2"

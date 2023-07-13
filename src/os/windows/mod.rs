@@ -340,6 +340,11 @@ impl<T> Symbol<T> {
     pub fn into_raw(self) -> FARPROC {
         self.pointer
     }
+
+    /// Get an unsafe copy of the raw pointer for the loaded `Symbol`.
+    pub fn as_ptr(&self) -> FARPROC {
+        self.pointer
+    }
 }
 
 impl<T> Symbol<Option<T>> {
